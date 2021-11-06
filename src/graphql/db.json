@@ -1,0 +1,52 @@
+{
+  "books": [
+    {
+      "title": "Title",
+      "author": "Author"
+    }
+  ],
+  "profile": {
+    "id": "id",
+    "name": "First Name",
+    "email": "email@email.ru"
+  },
+  "users": [
+    {
+      "id": "1",
+      "name": "User 1",
+      "email": "email@email.ru"
+    },
+    {
+      "id": "2",
+      "name": "User 2",
+      "email": "email@email.ru"
+    },
+    {
+      "id": "3",
+      "name": "User 3",
+      "email": "email@email.ru"
+    }
+  ],
+  "messages": [
+    {
+      "id": "1",
+      "text": "text 1"
+    },
+    {
+      "id": "2",
+      "text": "text 2"
+    },
+    {
+      "id": "3",
+      "text": "text 3"
+    },
+    {
+      "id": "4",
+      "text": "text 4"
+    },
+    {
+      "id": "5",
+      "text": "text 5"
+    }
+  ]
+}

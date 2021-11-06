@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "sourceMap": true,
+    "noImplicitAny": true,
+    "downlevelIteration": true,
+    "target": "es5",
+    "allowJs": true,
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "lib": [ "ES2015" ]
+  }
+}
