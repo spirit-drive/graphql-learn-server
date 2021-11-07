@@ -26,6 +26,6 @@ export const typeDefs = gql`
   }
 
   type Mutation {
-    test: String
+    editProfile(name: String!, email: String!): User!
   }
 `;
