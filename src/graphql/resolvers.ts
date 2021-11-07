@@ -1,4 +1,7 @@
 import { ApolloServerExpressConfig } from 'apollo-server-express/src/ApolloServer';
+import { PubSub } from 'graphql-subscriptions';
+
+const pubsub = new PubSub();
 
 const db = {
   "books": [
@@ -31,30 +34,25 @@ const db = {
   ],
   "messages": [
     {
-      "id": "1",
-      "text": "text 1"
-    },
-    {
-      "id": "2",
-      "text": "text 2"
-    },
-    {
-      "id": "3",
-      "text": "text 3"
-    },
-    {
-      "id": "4",
-      "text": "text 4"
-    },
-    {
-      "id": "5",
-      "text": "text 5"
+      id: "1",
+      "text": "text"
     }
-  ]
+  ],
 };
 
 export const resolvers: ApolloServerExpressConfig['resolvers'] = {
+  Subscription: {
+    messageSent: {
+      subscribe: () => pubsub.asyncIterator(['SEND_MESSAGE'])
+    },
+  },
   Mutation: {
+    sendMessage: (_, { text }) => {
+      const id = Math.random().toString();
+      db.messages.push({ text, id });
+      pubsub.publish('SEND_MESSAGE', { messageSent: db.messages });
+      return db.messages;
+    },
     editProfile: (_, { email, name }) => {
       return Object.assign(db.profile, { email, name })
     }

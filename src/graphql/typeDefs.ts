@@ -16,9 +16,6 @@ export const typeDefs = gql`
     ids: [ID!]!
   }
 
-  # The "Query" type is special: it lists all of the available queries that
-  # clients can execute, along with the return type for each. In this
-  # case, the "books" query returns an array of zero or more Books (defined above).
   type Query {
     profile: User
     users(filters: UserFilters): [User]!
@@ -27,5 +24,10 @@ export const typeDefs = gql`
 
   type Mutation {
     editProfile(name: String!, email: String!): User!
+    sendMessage(text: String!): [Message]
+  }
+  
+  type Subscription {
+    messageSent: [Message]
   }
 `;

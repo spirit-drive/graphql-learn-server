@@ -1,28 +1,44 @@
-import * as express from 'express';
-// import * as cors from 'cors';
-import { ApolloServer } from 'apollo-server-express';
-import { resolvers, typeDefs } from './graphql';
+import { createServer } from "http";
+import { execute, subscribe } from "graphql";
+import { SubscriptionServer } from "subscriptions-transport-ws";
+import { makeExecutableSchema } from "@graphql-tools/schema";
+import * as express from "express";
+import { ApolloServer } from "apollo-server-express";
+import { resolvers, typeDefs } from "./graphql";
 
-async function startApolloServer() {
+(async function () {
   const app = express();
 
-  // app.use(cors());
+  const httpServer = createServer(app);
 
-  const server = new ApolloServer({
+  const schema = makeExecutableSchema({
     typeDefs,
     resolvers,
-    introspection: true,
-    context: ({ req }) => ({
-      locale: req.headers.locale,
-    }),
+  });
+
+  const subscriptionServer = SubscriptionServer.create(
+    { schema, execute, subscribe },
+    // @ts-ignore
+    { server: httpServer, path: server?.graphqlPath }
+  );
+
+  const server = new ApolloServer({
+    schema,
+    plugins: [{
+      async serverWillStart() {
+        return {
+          async drainServer() {
+            subscriptionServer.close();
+          }
+        };
+      }
+    }],
   });
   await server.start();
-
   server.applyMiddleware({ app });
 
-  const PORT = process.env.PORT || 4000;
-  // eslint-disable-next-line no-console
-  app.listen(PORT, () => console.log(`Server started on port ${PORT}${server.graphqlPath}`));
-}
-
-startApolloServer();
+  const PORT = 4000;
+  httpServer.listen(PORT, () =>
+    console.log(`Server is now running on http://localhost:${PORT}/graphql`)
+  );
+})();
