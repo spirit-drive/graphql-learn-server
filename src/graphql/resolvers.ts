@@ -67,8 +67,8 @@ export const resolvers: ApolloServerExpressConfig['resolvers'] = {
     editProfile: (_, { email, name }) => Object.assign(db.profile, { email, name }),
     addUser: (_, { email, name }) => {
       const id = Math.random().toString(16);
-      db.users.push({ email, name, id });
-      return db.users;
+      const length = db.users.push({ email, name, id });
+      return db.users[length - 1];
     },
     editUser: (_, { id, email, name }) => {
       const user = db.users.find((u) => u.id === id);

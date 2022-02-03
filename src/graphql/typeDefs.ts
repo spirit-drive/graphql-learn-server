@@ -37,7 +37,7 @@ export const typeDefs = gql`
   type Mutation {
     editProfile(name: String!, email: String!): User!
     editUser(id: ID!, name: String!, email: String!): User!
-    addUser(name: String!, email: String!): [User]!
+    addUser(name: String!, email: String!): User!
     sendMessage(text: String!): [Message]
   }
 
