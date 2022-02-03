@@ -35,7 +35,18 @@ const db = {
   messages: [
     {
       id: '1',
-      text: 'text',
+      text: 'Message by default',
+    },
+  ],
+  unionValues: [
+    {
+      percent: 23,
+      __typename: 'Percent',
+    },
+    {
+      amount: 100,
+      currency: 'RU',
+      __typename: 'Money',
     },
   ],
 };
@@ -54,9 +65,20 @@ export const resolvers: ApolloServerExpressConfig['resolvers'] = {
       return db.messages;
     },
     editProfile: (_, { email, name }) => Object.assign(db.profile, { email, name }),
+    addUser: (_, { email, name }) => {
+      const id = Math.random().toString(16);
+      db.users.push({ email, name, id });
+      return db.users;
+    },
+    editUser: (_, { id, email, name }) => {
+      const user = db.users.find((u) => u.id === id);
+      if (!user) return new Error('user not found');
+      return Object.assign(user, { email, name });
+    },
   },
   Query: {
     profile: () => db.profile,
+    unionValues: () => db.unionValues,
     users: (_, { filters }) => {
       if (!filters) return db.users;
       return db.users?.filter((i) => filters.ids?.includes(i.id));

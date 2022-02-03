@@ -16,14 +16,28 @@ export const typeDefs = gql`
     ids: [ID!]!
   }
 
+  type Percent {
+    percent: Int!
+  }
+
+  type Money {
+    amount: Int!
+    currency: String!
+  }
+
+  union UnionValue = Percent | Money
+
   type Query {
     profile: User
     users(filters: UserFilters): [User]!
     messages: [Message]!
+    unionValues: [UnionValue]!
   }
 
   type Mutation {
     editProfile(name: String!, email: String!): User!
+    editUser(id: ID!, name: String!, email: String!): User!
+    addUser(name: String!, email: String!): [User]!
     sendMessage(text: String!): [Message]
   }
 
