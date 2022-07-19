@@ -32,12 +32,7 @@ const db = {
       email: 'email@email.ru',
     },
   ],
-  messages: [
-    {
-      id: '1',
-      text: 'Message by default',
-    },
-  ],
+  messages: [] as unknown[],
   unionValues: [
     {
       percent: 23,
