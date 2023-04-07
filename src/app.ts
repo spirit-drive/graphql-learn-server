@@ -1,46 +1,59 @@
+import { ApolloServer } from '@apollo/server';
+import { expressMiddleware } from '@apollo/server/express4';
+import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
 import { createServer } from 'http';
-import { execute, subscribe } from 'graphql';
-import { SubscriptionServer } from 'subscriptions-transport-ws';
-import { makeExecutableSchema } from '@graphql-tools/schema';
 import * as express from 'express';
-import { ApolloServer } from 'apollo-server-express';
+import { makeExecutableSchema } from '@graphql-tools/schema';
+import { WebSocketServer } from 'ws';
+import { useServer } from 'graphql-ws/lib/use/ws';
+import * as bodyParser from 'body-parser';
+import * as cors from 'cors';
 import { resolvers, typeDefs } from './graphql';
 
-(async function () {
-  const app = express();
+(async () => {
+  // Create the schema, which will be used separately by ApolloServer and
+  // the WebSocket server.
+  const schema = makeExecutableSchema({ typeDefs, resolvers });
 
+  // Create an Express app and HTTP server; we will attach both the WebSocket
+  // server and the ApolloServer to this HTTP server.
+  const app = express();
   const httpServer = createServer(app);
 
-  const schema = makeExecutableSchema({
-    typeDefs,
-    resolvers,
+  // Create our WebSocket server using the HTTP server we just set up.
+  const wsServer = new WebSocketServer({
+    server: httpServer,
+    path: '/graphql',
   });
+  // Save the returned server's info so we can shutdown this server later
+  const serverCleanup = useServer({ schema }, wsServer);
 
-  const subscriptionServer = SubscriptionServer.create(
-    { schema, execute, subscribe },
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    { server: httpServer, path: server?.graphqlPath }
-  );
-
+  // Set up ApolloServer.
   const server = new ApolloServer({
     schema,
     plugins: [
+      // Proper shutdown for the HTTP server.
+      ApolloServerPluginDrainHttpServer({ httpServer }),
+
+      // Proper shutdown for the WebSocket server.
       {
         async serverWillStart() {
           return {
             async drainServer() {
-              subscriptionServer.close();
+              await serverCleanup.dispose();
             },
           };
         },
       },
     ],
   });
+
   await server.start();
-  server.applyMiddleware({ app });
+  app.use('/graphql', cors<cors.CorsRequest>(), bodyParser.json(), expressMiddleware(server));
 
   const PORT = 4000;
-  httpServer.listen(PORT, () => console.log(`Server is now running on http://localhost:${PORT}/graphql`));
+  // Now that our HTTP server is fully set up, we can listen to it.
+  httpServer.listen(PORT, () => {
+    console.log(`Server is now running on http://localhost:${PORT}/graphql`);
+  });
 })();
